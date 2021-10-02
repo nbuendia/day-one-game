@@ -5,14 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack serve --open --config webpack.development.js",
-    "build": "webpack --config webpack.development.js"
+    "dev": "webpack serve --open --config webpack.config.js",
+    "build": "webpack --config webpack.config.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "html-webpack-plugin": "^5.3.2",
-    "phaser": "^3.55.2"
+    "phaser": "^3.55.2",
+    "phaser-matter-collision-plugin": "^1.0.0"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",
