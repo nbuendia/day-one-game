@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import Player from "./Player";
 import PhaserMatterCollisionPlugin from "phaser-matter-collision-plugin";
 
 class MainScene extends Phaser.Scene {
@@ -7,32 +8,24 @@ class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet("player-idle", "assets/idle-sheet.png", {
-      frameWidth: 80,
-      frameHeight: 80,
-    });
-
-    this.load.spritesheet("player-run", "assets/run-sheet.png", {
-      frameWidth: 80,
-      frameHeight: 80,
-    });
-
+    Player.preload(this);
+    this.load.image("collider", "assets/collider.png");
     this.load.image("tiles", "assets/Aurora Tileset.png");
     this.load.tilemapTiledJSON("map", "assets/lostWoods.json");
   }
 
   create() {
-    this.createmap();
+    this.cameras.main.fadeIn(250, 0, 0, 0);
+    this.instantiateColliders();
     this.createPlayer();
+    this.createmap();
+    this.createColliders();
   }
 
   update() {
-    this.handleInputs();
+    this.player.update();
   }
 
-  resizeCollider(obj, num) {
-    obj.body.setSize(obj.width - num, obj.height - num, true);
-  }
   createmap() {
     const map = this.make.tilemap({ key: "map" });
     const tileSet = map.addTilesetImage(
@@ -44,74 +37,131 @@ class MainScene extends Phaser.Scene {
       0
     );
 
-    const layer1 = map.createLayer("Tile Layer 1", tileSet, 0, 0);
-    const layer2 = map.createLayer("Tile Layer 2", tileSet, 0, 0);
-    const layer3 = map.createLayer("Tile Layer 3", tileSet, 0, 0);
-    const layer5 = map.createLayer("Tile Layer 5", tileSet, 0, 0);
-    const layer4 = map.createLayer("Tile Layer 4", tileSet, 0, 0);
+    const layer1 = map.createLayer("Tile Layer 1", tileSet, 0, 0).setDepth(-1);
+    const layer2 = map.createLayer("Tile Layer 2", tileSet, 0, 0).setDepth(-1);
+    const layer3 = map.createLayer("Tile Layer 3", tileSet, 0, 0).setDepth(-1);
+    const layer5 = map.createLayer("Tile Layer 5", tileSet, 0, 0).setDepth(-1);
+    const layer4 = map.createLayer("Tile Layer 4", tileSet, 0, 0).setDepth(-1);
   }
 
   createPlayer() {
-    //PLAYER IDLE CONFIG
-    this.player = this.physics.add
-      .sprite(250, 250, "player-idle")
-      .setOrigin(0, 0);
+    this.player = this.physics.add.existing(
+      new Player(this, 175, 285, "player-idle")
+    );
 
-    this.anims.create({
-      key: "player-idle-anim",
-      frames: this.anims.generateFrameNumbers("player-idle"),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: "player-run-anim",
-      frames: this.anims.generateFrameNumbers("player-run"),
-      frameRate: 22,
-      repeat: -1,
-    });
-
-    this.player.play("player-idle-anim");
-    this.resizeCollider(this.player, 35);
+    this.resizeCollider(this.player, 50);
   }
 
-  handleInputs() {
-    let speed = 2;
+  resizeCollider(obj, num) {
+    obj.body.setSize(obj.width - num, obj.height - num, true);
+  }
 
-    const upKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
-    const downKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.DOWN
-    );
-    const rightKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.RIGHT
-    );
-    const leftKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.LEFT
+  instantiateColliders() {
+    this.doorCollider = this.physics.add
+      .sprite(160, 225, "collider")
+      .setOrigin(0, 0)
+      .setSize(25, 10, true)
+      .setDepth(-1);
+
+    this.forestCollider = this.physics.add
+      .sprite(475, 250, "collider")
+      .setOrigin(0, 0)
+      .setSize(10, 75, true)
+      .setDepth(-1);
+
+    this.fenceCollider1 = this.physics.add
+      .sprite(400, 295, "collider")
+      .setOrigin(0, 0)
+      .setSize(200, 10, true)
+      .setDepth(-1)
+      .setImmovable(true);
+
+    this.fenceCollider2 = this.physics.add
+      .sprite(400, 200, "collider")
+      .setOrigin(0, 0)
+      .setSize(190, 10, true)
+      .setDepth(-1);
+
+    this.fenceCollider3 = this.physics.add
+      .sprite(300, 40, "collider")
+      .setOrigin(0, 0)
+      .setSize(10, 115, true)
+      .setDepth(-1);
+
+    this.fenceCollider4 = this.physics.add
+      .sprite(310, 145, "collider")
+      .setOrigin(0, 0)
+      .setSize(10, 100, true)
+      .setDepth(-1);
+
+    this.fenceCollider5 = this.physics.add
+      .sprite(300, 400, "collider")
+      .setOrigin(0, 0)
+      .setSize(10, 200, true)
+      .setDepth(-1);
+  }
+
+  createColliders() {
+    this.physics.add.collider(
+      this.player,
+      this.doorCollider,
+      this.onDoorCollision,
+      null,
+      this
     );
 
-    if (upKey.isDown) {
-      this.player.y -= speed;
-    }
-    if (downKey.isDown) {
-      this.player.y += speed;
-    }
-    if (rightKey.isDown) {
-      this.player.x += speed;
-    }
-    if (leftKey.isDown) {
-      this.player.x -= speed;
-    }
+    this.physics.add.collider(
+      this.player,
+      this.forestCollider,
+      this.onForestCollision,
+      null,
+      this
+    );
 
-    if (upKey.isDown || downKey.isDown || rightKey.isDown || leftKey.isDown) {
-      if (rightKey.isDown) {
-        this.player.play("player-run-anim", true).flipX = false;
-      } else if (leftKey.isDown) {
-        this.player.play("player-run-anim", true).flipX = true;
+    this.fenceColliders(this.fenceCollider1);
+    this.fenceColliders(this.fenceCollider2);
+    this.fenceColliders(this.fenceCollider3);
+    this.fenceColliders(this.fenceCollider4);
+    this.fenceColliders(this.fenceCollider5);
+  }
+
+  fenceColliders(fenceID) {
+    this.physics.add.collider(
+      fenceID,
+      this.player,
+      this.onFenceCollision,
+      null,
+      this
+    );
+  }
+
+  onFenceCollision(fence, player) {
+    fence.setVelocity(0, 0).setImmovable(true);
+  }
+
+  onDoorCollision(player, door) {
+    door.setImmovable(true).setVelocity(0);
+    player.disableBody(false, false);
+    this.cameras.main.fadeOut(250, 0, 0, 0);
+    this.cameras.main.once(
+      Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+      (cam, effect) => {
+        this.scene.stop("MainScene");
+        this.scene.start("HomeScene");
       }
-      this.player.play("player-run-anim", true);
-    } else {
-      this.player.play("player-idle-anim", true);
-    }
+    );
+  }
+
+  onForestCollision(player, entry) {
+    player.disableBody(false, false);
+    this.cameras.main.fadeOut(250, 0, 0, 0);
+    this.cameras.main.once(
+      Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+      (cam, effect) => {
+        this.scene.stop("MainScene");
+        this.scene.start("LostWoodsScene");
+      }
+    );
   }
 }
 
