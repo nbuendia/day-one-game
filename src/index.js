@@ -1,4 +1,9 @@
 import MainScene from "./scenes/MainScene";
+import HomeScene from "./scenes/HomeScene";
+import LostWoodsScene from "./scenes/LostWoodsScene";
+import ForestScene2 from "./scenes/ForestScene2";
+import ForestScene3 from "./scenes/ForestScene3";
+
 import PhaserMatterCollisionPlugin from "phaser-matter-collision-plugin";
 
 const config = {
@@ -6,14 +11,14 @@ const config = {
   height: 512,
   backgroundColor: "black",
   type: Phaser.AUTO,
-  scene: [MainScene],
+  scene: [MainScene, LostWoodsScene, HomeScene, ForestScene2, ForestScene3],
   scale: {
     zoom: 2,
   },
   physics: {
     default: "arcade",
     arcade: {
-      debug: true,
+      // debug: true,
       gravity: {
         y: 0,
       },
